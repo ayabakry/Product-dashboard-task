@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { Grid, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
+import { useDebounce } from '../hooks/useDebounce';
 import ProductCard from '../components/ProductCard';
+import SearchBar from '../components/SearchBar';
 
 function Dashboard() {
   const { data, isLoading, error } = useProducts();
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   if (isLoading) {
     return (
@@ -21,25 +26,31 @@ function Dashboard() {
     );
   }
 
-  const products = data?.products ?? [];
+  const allProducts = data?.products ?? [];
 
-  if (products.length === 0) {
-    return (
-      <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
-        No products found.
-      </Typography>
-    );
-  }
+  const filteredProducts = allProducts.filter((product) =>
+    product.title.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
 
   return (
-  <Grid container spacing={3}>
-    {products.map((product) => (
-      <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <ProductCard product={product} />
-      </Grid>
-    ))}
-  </Grid>
-);
+    <>
+      <SearchBar value={search} onChange={setSearch} />
+
+      {filteredProducts.length === 0 ? (
+        <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
+          No products found.
+        </Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {filteredProducts.map((product) => (
+            <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <ProductCard product={product} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </>
+  );
 }
 
 export default Dashboard;
