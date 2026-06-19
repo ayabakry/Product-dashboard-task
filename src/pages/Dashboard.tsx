@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Grid, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import { Grid, Typography, CircularProgress, Alert, Box, Stack, Button } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
 import { useDebounce } from '../hooks/useDebounce';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
+import CategoryFilter from '../components/CategoryFilter';
 
 function Dashboard() {
   const { data, isLoading, error } = useProducts();
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
   const debouncedSearch = useDebounce(search, 400);
 
   if (isLoading) {
@@ -28,13 +30,30 @@ function Dashboard() {
 
   const allProducts = data?.products ?? [];
 
-  const filteredProducts = allProducts.filter((product) =>
-    product.title.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  const filteredProducts = allProducts.filter((product) => {
+    const matchesSearch = product.title.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesCategory = category === '' || product.category === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  const hasActiveFilters = search !== '' || category !== '';
+
+  const clearFilters = () => {
+    setSearch('');
+    setCategory('');
+  };
 
   return (
     <>
-      <SearchBar value={search} onChange={setSearch} />
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+        <SearchBar value={search} onChange={setSearch} />
+        <CategoryFilter value={category} onChange={setCategory} />
+        {hasActiveFilters && (
+          <Button onClick={clearFilters} variant="outlined">
+            Clear Filters
+          </Button>
+        )}
+      </Stack>
 
       {filteredProducts.length === 0 ? (
         <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
