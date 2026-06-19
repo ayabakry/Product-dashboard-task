@@ -11,14 +11,19 @@ import {
   Paper,
   Divider,
   Stack,
+  IconButton,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useProduct } from '../hooks/useProduct';
+import { useFavorites } from '../context/FavoritesContext';
 
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: product, isLoading, error } = useProduct(Number(id));
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   if (isLoading) {
     return (
@@ -36,6 +41,8 @@ function ProductDetails() {
     );
   }
 
+  const favorite = isFavorite(product.id);
+
   return (
     <Box>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 3 }}>
@@ -45,7 +52,6 @@ function ProductDetails() {
       <Paper sx={{ p: { xs: 2, md: 4 } }}>
         <Grid container spacing={5}>
           <Grid item xs={12} md={5}>
-
             <Box
               component="img"
               src={product.images[0] || product.thumbnail}
@@ -61,8 +67,12 @@ function ProductDetails() {
           </Grid>
 
           <Grid item xs={12} md={7}>
-
-            <Chip label={product.category} size="small" sx={{ mb: 2 }} />
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
+              <Chip label={product.category} size="small" sx={{ mb: 2 }} />
+              <IconButton onClick={() => toggleFavorite(product.id)}>
+                {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+              </IconButton>
+            </Stack>
 
             <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
               {product.title}
