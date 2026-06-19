@@ -5,11 +5,13 @@ import { useDebounce } from '../hooks/useDebounce';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
+import SortControl, { type SortOption } from '../components/SortControl';
 
 function Dashboard() {
   const { data, isLoading, error } = useProducts();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [sort, setSort] = useState<SortOption>('');
   const debouncedSearch = useDebounce(search, 400);
 
   if (isLoading) {
@@ -36,11 +38,20 @@ function Dashboard() {
     return matchesSearch && matchesCategory;
   });
 
-  const hasActiveFilters = search !== '' || category !== '';
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sort === 'priceLowHigh') return a.price - b.price;
+    if (sort === 'priceHighLow') return b.price - a.price;
+    if (sort === 'ratingHighLow') return b.rating - a.rating;
+    if (sort === 'nameAZ') return a.title.localeCompare(b.title);
+    return 0;
+  });
+
+  const hasActiveFilters = search !== '' || category !== '' || sort !== '';
 
   const clearFilters = () => {
     setSearch('');
     setCategory('');
+    setSort('');
   };
 
   return (
@@ -48,6 +59,7 @@ function Dashboard() {
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
         <SearchBar value={search} onChange={setSearch} />
         <CategoryFilter value={category} onChange={setCategory} />
+        <SortControl value={sort} onChange={setSort} />
         {hasActiveFilters && (
           <Button onClick={clearFilters} variant="outlined">
             Clear Filters
@@ -55,13 +67,13 @@ function Dashboard() {
         )}
       </Stack>
 
-      {filteredProducts.length === 0 ? (
+      {sortedProducts.length === 0 ? (
         <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
           No products found.
         </Typography>
       ) : (
         <Grid container spacing={3}>
-          {filteredProducts.map((product) => (
+          {sortedProducts.map((product) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <ProductCard product={product} />
             </Grid>
