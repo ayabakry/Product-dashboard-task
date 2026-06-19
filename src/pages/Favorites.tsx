@@ -1,6 +1,6 @@
 import { Grid, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
-import { useFavorites } from '../context/FavoritesContext';
+import { useFavorites } from '../hooks/useFavorites';
 import ProductCard from '../components/ProductCard';
 
 function Favorites() {
@@ -39,7 +39,7 @@ function Favorites() {
       ) : (
         <Grid container spacing={3}>
           {favoriteProducts.map((product) => (
-<Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
               <ProductCard product={product} />
             </Grid>
           ))}

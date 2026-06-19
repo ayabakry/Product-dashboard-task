@@ -1,9 +1,19 @@
-import { Card, CardActionArea, CardMedia, CardContent, Typography, Chip, Rating, Box, IconButton } from '@mui/material';
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Chip,
+  Rating,
+  Box,
+  IconButton,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Product } from '../types/product';
-import { useFavorites } from '../context/FavoritesContext';
+import { useFavorites } from '../hooks/useFavorites';
 
 interface ProductCardProps {
   product: Product;
@@ -21,7 +31,13 @@ function ProductCard({ product }: ProductCardProps) {
           e.stopPropagation();
           toggleFavorite(product.id);
         }}
-        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1, backgroundColor: 'rgba(255,255,255,0.8)' }}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 1,
+          backgroundColor: 'rgba(255,255,255,0.8)',
+        }}
       >
         {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
       </IconButton>
