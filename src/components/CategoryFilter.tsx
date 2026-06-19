@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useCategories } from '../hooks/useCategories';
 
 interface CategoryFilterProps {

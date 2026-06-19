@@ -44,7 +44,8 @@ function ProductDetails() {
 
       <Paper sx={{ p: { xs: 2, md: 4 } }}>
         <Grid container spacing={5}>
-          <Grid size={{ xs: 12, md: 5 }}>
+          <Grid item xs={12} md={5}>
+
             <Box
               component="img"
               src={product.images[0] || product.thumbnail}
@@ -59,7 +60,8 @@ function ProductDetails() {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, md: 7 }}>
+          <Grid item xs={12} md={7}>
+
             <Chip label={product.category} size="small" sx={{ mb: 2 }} />
 
             <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
