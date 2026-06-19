@@ -1,16 +1,8 @@
-import { useProducts } from './hooks/useProducts';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes/AppRouter';
 
 function App() {
-  const { data, isLoading, error } = useProducts();
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-
-  return (
-    <div>
-      <h1>Products: {data?.products.length}</h1>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
