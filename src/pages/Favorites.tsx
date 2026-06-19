@@ -1,6 +1,6 @@
 import { Grid, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useProducts } from '../hooks/useProducts';
-import { useFavorites } from '../hooks/useFavorites';
+import { useFavorites } from '../context/FavoritesContext';
 import ProductCard from '../components/ProductCard';
 
 function Favorites() {
