@@ -1,6 +1,9 @@
-import { Card, CardActionArea, CardMedia, CardContent, Typography, Chip, Rating, Box } from '@mui/material';
+import { Card, CardActionArea, CardMedia, CardContent, Typography, Chip, Rating, Box, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Product } from '../types/product';
+import { useFavorites } from '../hooks/useFavorites';
 
 interface ProductCardProps {
   product: Product;
@@ -8,9 +11,21 @@ interface ProductCardProps {
 
 function ProductCard({ product }: ProductCardProps) {
   const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(product.id);
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <IconButton
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFavorite(product.id);
+        }}
+        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1, backgroundColor: 'rgba(255,255,255,0.8)' }}
+      >
+        {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+      </IconButton>
+
       <CardActionArea onClick={() => navigate(`/products/${product.id}`)} sx={{ flexGrow: 1 }}>
         <CardMedia
           component="img"
