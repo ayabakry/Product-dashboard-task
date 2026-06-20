@@ -1,34 +1,33 @@
-import { useState } from 'react';
-import { Grid, Typography, CircularProgress, Alert, Box, Stack, Button } from '@mui/material';
+import { useState, useMemo } from 'react';
+import {
+  Grid,
+  Typography,
+  CircularProgress,
+  Alert,
+  Box,
+  Stack,
+  IconButton,
+  Tooltip,
+  Pagination,
+} from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useProducts } from '../hooks/useProducts';
 import { useDebounce } from '../hooks/useDebounce';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import SortControl, { type SortOption } from '../components/SortControl';
+import Hero from '../components/Hero';
+
+const ITEMS_PER_PAGE = 12;
 
 function Dashboard() {
   const { data, isLoading, error } = useProducts();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [sort, setSort] = useState<SortOption>('');
+  const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 400);
-
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ mt: 4 }}>
-        Failed to load products. Please try again later.
-      </Alert>
-    );
-  }
 
   const allProducts = data?.products ?? [];
 
@@ -46,40 +45,101 @@ function Dashboard() {
     return 0;
   });
 
+  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return sortedProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedProducts, page]);
+
+  // everything above this line runs on every render, no matter what —
+  // now it's safe to conditionally return below
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mt: 4 }}>
+        Failed to load products. Please try again later.
+      </Alert>
+    );
+  }
+
   const hasActiveFilters = search !== '' || category !== '' || sort !== '';
 
   const clearFilters = () => {
     setSearch('');
     setCategory('');
     setSort('');
+    setPage(1);
   };
 
   return (
     <>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
-        <SearchBar value={search} onChange={setSearch} />
-        <CategoryFilter value={category} onChange={setCategory} />
-        <SortControl value={sort} onChange={setSort} />
-        {hasActiveFilters && (
-          <Button onClick={clearFilters} variant="outlined">
-            Clear Filters
-          </Button>
-        )}
-      </Stack>
+      <Hero />
+      <Box id="products">
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+          <SearchBar
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+          />
+          <CategoryFilter
+            value={category}
+            onChange={(value) => {
+              setCategory(value);
+              setPage(1);
+            }}
+          />
+          <SortControl
+            value={sort}
+            onChange={(value) => {
+              setSort(value);
+              setPage(1);
+            }}
+          />
+          {hasActiveFilters && (
+            <Tooltip title="Clear filters">
+              <IconButton onClick={clearFilters} color="primary">
+                <ClearIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
 
-      {sortedProducts.length === 0 ? (
-        <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
-          No products found.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {sortedProducts.map((product) => (
-            <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
-              <ProductCard product={product} />
+        {paginatedProducts.length === 0 ? (
+          <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
+            No products found.
+          </Typography>
+        ) : (
+          <>
+            <Grid container spacing={3}>
+              {paginatedProducts.map((product) => (
+                <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-      )}
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+                color="primary"
+              />
+            </Box>
+          </>
+        )}
+      </Box>
     </>
   );
 }
