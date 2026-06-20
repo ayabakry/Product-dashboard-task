@@ -52,7 +52,8 @@ function Header() {
         >
           <StorefrontIcon fontSize="large" />
           <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'none', sm: 'block' } }}>
-            Storely
+              ProductHub
+
           </Typography>
         </Box>
 
