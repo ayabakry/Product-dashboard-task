@@ -1,6 +1,6 @@
-# Product Dashboard
+# ProductHub
 
-A product management dashboard built as part of a Senior Frontend Engineer take-home assignment. Lets users browse, search, filter, sort, and favorite products fetched from the [DummyJSON API](https://dummyjson.com/products).
+A product management dashboard built as part of a Senior Frontend Engineer take-home assignment. Lets users browse, search, filter, sort, paginate, and favorite products fetched from the [DummyJSON API](https://dummyjson.com/products), with dark mode support.
 
 **Live demo:** https://product-dashboard-task-pied.vercel.app/
 
@@ -8,9 +8,9 @@ A product management dashboard built as part of a Senior Frontend Engineer take-
 
 - React 18 + TypeScript
 - Vite
-- React Router (routing)
+- React Router (routing, with route-based code splitting)
 - TanStack Query (server state / data fetching)
-- MUI (Material UI) — UI components + custom theme
+- MUI (Material UI) — UI components + custom light/dark theme
 - Axios (HTTP client)
 - ESLint + Prettier
 
@@ -41,13 +41,13 @@ The project is organized by responsibility rather than by feature, to keep thing
 ```
 src/
 ├── api/            # axios instance + API call functions
-├── components/      # reusable, presentational components (ProductCard, SearchBar, etc.)
-├── context/          # React Context providers (FavoritesContext)
-├── hooks/             # custom hooks (useProducts, useProduct, useCategories, useDebounce)
+├── components/      # reusable, presentational components (ProductCard, Hero, CategoryFilter, etc.)
+├── context/          # React Context providers (Favorites, Search, Color Mode)
+├── hooks/             # custom hooks (useProducts, useProduct, useCategories, useDebounce, useFavorites, useSearch, useColorMode)
 ├── layouts/          # app shell (Header, MainLayout)
 ├── pages/            # route-level components (Dashboard, ProductDetails, Favorites)
-├── routes/           # React Router configuration
-├── theme/            # MUI custom theme
+├── routes/           # React Router configuration + lazy-loaded page bindings
+├── theme/            # MUI custom theme (light/dark aware)
 └── types/             # shared TypeScript types
 ```
 
@@ -56,36 +56,36 @@ src/
 The app separates three kinds of state, on purpose:
 
 - **Server state** (the product list, single product, categories) is handled entirely by **TanStack Query**. It takes care of caching, loading/error states, and refetching, so components don't need to manually track any of that.
-- **UI state** (search input, selected category, selected sort option) lives as plain `useState` inside the `Dashboard` page, since it's local to that page and doesn't need to be shared anywhere else.
-- **Persistent state** (favorites) lives in a small `FavoritesContext`. It started out as a plain custom hook, but since both the product cards and the Favorites page need to read and update the *same* favorites list, it had to move into Context — otherwise each component ends up with its own disconnected copy of the state, which actually happened during development (toggling a favorite from one page wouldn't reflect on another until a refresh). Context with `useState` + `useEffect` syncing to `localStorage` solved this cleanly without pulling in a separate state library like Zustand or Redux, which felt like overkill for one small piece of shared state.
+- **UI state** (selected category, selected sort option, current page) lives as plain `useState` inside the `Dashboard` page, since it's local to that page and doesn't need to be shared anywhere else.
+- **Shared/persistent state** (favorites, search, color mode) lives in small Context providers:
+  - `FavoritesContext` — started as a plain custom hook, but since product cards, the details page, and the Favorites page all need to read and update the *same* favorites list, it had to move into Context. Otherwise each component ends up with its own disconnected copy of the state, which actually happened during development (toggling a favorite from one page wouldn't reflect on another until a refresh).
+  - `SearchContext` — search moved from the Dashboard into the navbar, so it needed to be shared the same way as favorites.
+  - `ColorModeContext` — holds the current light/dark mode and persists the choice to `localStorage`.
+
+  All three follow the same pattern (a separate file for `createContext`, a separate file for the Provider component, and a separate file for the consuming hook) to satisfy React's Fast Refresh rules, which require files to export either only components or only non-component values.
+
+  This avoided pulling in a separate state library like Zustand or Redux, which felt like overkill for a few small pieces of shared state.
 
 ## Assumptions
 
-- Used `https://dummyjson.com/products?limit=0` to fetch the full product list at once (it returns ~194 products), rather than implementing server-side pagination, since the task doesn't require pagination and the dataset is small enough to filter/sort entirely on the client.
+- Used `https://dummyjson.com/products?limit=0` to fetch the full product list at once (it returns ~194 products), rather than implementing server-side pagination. Pagination is instead handled client-side over the already-fetched list (see Bonus Features below).
 - Favorites are stored as an array of product IDs in `localStorage`, not full product objects, since the full product data is already available from the API and re-fetched on each load. This avoids storing stale/duplicate data.
 - "Brand information (if available)" is shown conditionally since not every product in the API has a `brand` field.
 
 ## Design Decisions
 
-- **MUI was a hard requirement**, so the whole UI is built with MUI components rather than Tailwind or custom CSS. A custom theme (colors, typography, shape, button/card overrides) was applied through `ThemeProvider` to avoid the default out-of-the-box MUI look.
+- **MUI was a hard requirement**, so the whole UI is built with MUI components rather than Tailwind or custom CSS. A custom theme (colors, typography, shape, button/card/chip overrides) was applied through `ThemeProvider`, with separate light and dark palettes, to avoid the default out-of-the-box MUI look in either mode.
 - **Axios over plain fetch** for the API layer, mainly for cleaner error handling through interceptors instead of manually checking `res.ok` in every function.
 - **Debounced search** (400ms) to avoid filtering on every keystroke, while keeping the input itself instant/responsive.
 - **Search, filter, and sort all run client-side** on the already-fetched product list, combined together in `Dashboard.tsx`. This keeps the logic in one place and easy to follow, rather than spreading it across multiple API calls.
+- **Search lives in the navbar** rather than on the Dashboard page itself, expandable on click, so it's accessible from any page and feels like a persistent part of the app shell rather than a page-specific control.
 
 ## Trade-offs
 
-- Fetching all products at once instead of paginating is simple and fast for ~194 items, but wouldn't scale well to a dataset with thousands of products — at that point server-side pagination or infinite scroll would be necessary.
-- Favorites state is shared through React Context rather than a dedicated state library. This works fine at the current scale (one piece of shared state), but if the app grew to have several pieces of cross-cutting UI state, something like Zustand would probably be a better fit than multiple Context providers.
+- Fetching all products at once instead of paginating server-side is simple and fast for ~194 items, but wouldn't scale well to a dataset with thousands of products — at that point true server-side pagination would be necessary instead of the current client-side slicing.
+- Shared state (favorites, search, color mode) is handled through multiple small React Context providers rather than a single dedicated state library. This works fine at the current scale, but if the app grew to have many more pieces of cross-cutting state, something like Zustand would probably consolidate things more cleanly than several separate Context providers.
 - No automated tests were added, given the scope and time constraints of the assignment — testing was treated as a "nice to have" rather than core to the requirements.
 
-## Potential Future Improvements
+## Bonus Features Implemented
 
-- Add pagination or infinite scroll if the product list were to grow significantly
-- Add unit tests for hooks (`useFavorites`, `useDebounce`) and the filter/sort logic in `Dashboard.tsx`
-- Add a quantity/cart system if this evolved from a "dashboard" into an actual storefront
-- Add skeleton loaders instead of a single spinner for a smoother loading experience
-- Persist search/filter/sort state in the URL (query params) so a filtered view is shareable via link
-
-## Author
-
-Ayat Khaled
+- **Pagination** — client-side pagination (12 products per page) over the filtered/sorted product list, using MUI's `Pagination` component. Resets to page 1
