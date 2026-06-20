@@ -57,19 +57,24 @@ function ProductDetails() {
               src={product.images[0] || product.thumbnail}
               alt={product.title}
               sx={{
-                width: '100%',
-                borderRadius: 2,
-                objectFit: 'contain',
-                backgroundColor: '#fafafa',
-                p: 3,
-              }}
+  width: '100%',
+  borderRadius: 2,
+  objectFit: 'contain',
+  backgroundColor: (theme) =>
+    theme.palette.mode === 'dark' ? theme.palette.grey[900] : '#fafafa',
+  p: 3,
+}}
             />
           </Grid>
 
           <Grid item xs={12} md={7}>
             <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
               <Chip label={product.category} size="small" sx={{ mb: 2 }} />
-              <IconButton onClick={() => toggleFavorite(product.id)}>
+              <IconButton
+                onClick={() => toggleFavorite(product.id)}
+                aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                {' '}
                 {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
               </IconButton>
             </Stack>

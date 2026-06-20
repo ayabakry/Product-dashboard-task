@@ -16,13 +16,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import { useFavorites } from '../hooks/useFavorites';
 import { useSearch } from '../hooks/useSearch';
-
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { useColorMode } from '../hooks/useColorMode';
 function Header() {
   const { favorites } = useFavorites();
   const { search, setSearch } = useSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { mode, toggleColorMode } = useColorMode();
 
   function handleSearchChange(value: string) {
     setSearch(value);
@@ -52,8 +55,7 @@ function Header() {
         >
           <StorefrontIcon fontSize="large" />
           <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'none', sm: 'block' } }}>
-              ProductHub
-
+            ProductHub
           </Typography>
         </Box>
 
@@ -75,7 +77,12 @@ function Header() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={closeSearch} sx={{ color: 'white' }}>
+                    <IconButton
+                      size="small"
+                      onClick={closeSearch}
+                      sx={{ color: 'white' }}
+                      aria-label="Close search"
+                    >
                       <CloseIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
@@ -92,11 +99,13 @@ function Header() {
             }}
           />
         ) : (
-          <IconButton color="inherit" onClick={() => setSearchOpen(true)}>
+          <IconButton color="inherit" onClick={() => setSearchOpen(true)} aria-label="Open search">
             <SearchIcon />
           </IconButton>
         )}
-
+        <IconButton color="inherit" onClick={toggleColorMode} aria-label="Toggle dark mode">
+          {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+        </IconButton>
         <IconButton component={Link} to="/favorites" color="inherit">
           <Badge badgeContent={favorites.length} color="error">
             <FavoriteIcon />

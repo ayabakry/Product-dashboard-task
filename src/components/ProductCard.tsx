@@ -14,6 +14,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Product } from '../types/product';
 import { useFavorites } from '../hooks/useFavorites';
+import { memo } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -31,25 +32,32 @@ function ProductCard({ product }: ProductCardProps) {
           e.stopPropagation();
           toggleFavorite(product.id);
         }}
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 1,
-          backgroundColor: 'rgba(255,255,255,0.8)',
-        }}
+        aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+       sx={{
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  zIndex: 1,
+  backgroundColor: (theme) =>
+    theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.8)',
+}}
       >
         {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
       </IconButton>
 
       <CardActionArea onClick={() => navigate(`/products/${product.id}`)} sx={{ flexGrow: 1 }}>
         <CardMedia
-          component="img"
-          height="180"
-          image={product.thumbnail}
-          alt={product.title}
-          sx={{ objectFit: 'contain', p: 2, backgroundColor: '#fff' }}
-        />
+  component="img"
+  height="180"
+  image={product.thumbnail}
+  alt={product.title}
+  sx={{
+    objectFit: 'contain',
+    p: 2,
+    backgroundColor: (theme) =>
+      theme.palette.mode === 'dark' ? theme.palette.grey[900] : '#fff',
+  }}
+/>
         <CardContent>
           <Chip label={product.category} size="small" sx={{ mb: 1 }} />
           <Typography variant="subtitle1" fontWeight={600} noWrap>
@@ -70,4 +78,4 @@ function ProductCard({ product }: ProductCardProps) {
   );
 }
 
-export default ProductCard;
+export default memo(ProductCard);

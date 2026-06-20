@@ -106,7 +106,7 @@ function Dashboard() {
           <SortControl value={sort} onChange={(value) => setSort(value)} />
           {hasActiveFilters && (
             <Tooltip title="Clear filters">
-              <IconButton onClick={clearFilters} color="primary">
+              <IconButton onClick={clearFilters} color="primary" aria-label="Clear all filters">
                 <ClearIcon />
               </IconButton>
             </Tooltip>
