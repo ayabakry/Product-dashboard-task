@@ -13,8 +13,8 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import { useProducts } from '../hooks/useProducts';
 import { useDebounce } from '../hooks/useDebounce';
+import { useSearch } from '../hooks/useSearch';
 import ProductCard from '../components/ProductCard';
-import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import SortControl, { type SortOption } from '../components/SortControl';
 import Hero from '../components/Hero';
@@ -23,7 +23,7 @@ const ITEMS_PER_PAGE = 12;
 
 function Dashboard() {
   const { data, isLoading, error } = useProducts();
-  const [search, setSearch] = useState('');
+  const { search, setSearch } = useSearch();
   const [category, setCategory] = useState('');
   const [sort, setSort] = useState<SortOption>('');
   const [page, setPage] = useState(1);
@@ -52,8 +52,20 @@ function Dashboard() {
     return sortedProducts.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedProducts, page]);
 
-  // everything above this line runs on every render, no matter what —
-  // now it's safe to conditionally return below
+  const [prevFilters, setPrevFilters] = useState({
+    search: debouncedSearch,
+    category,
+    sort,
+  });
+
+  if (
+    prevFilters.search !== debouncedSearch ||
+    prevFilters.category !== category ||
+    prevFilters.sort !== sort
+  ) {
+    setPrevFilters({ search: debouncedSearch, category, sort });
+    setPage(1);
+  }
 
   if (isLoading) {
     return (
@@ -84,28 +96,14 @@ function Dashboard() {
     <>
       <Hero />
       <Box id="products">
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
-          <SearchBar
-            value={search}
-            onChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-          />
-          <CategoryFilter
-            value={category}
-            onChange={(value) => {
-              setCategory(value);
-              setPage(1);
-            }}
-          />
-          <SortControl
-            value={sort}
-            onChange={(value) => {
-              setSort(value);
-              setPage(1);
-            }}
-          />
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ mb: 3 }}
+          justifyContent="flex-end"
+        >
+          <CategoryFilter value={category} onChange={(value) => setCategory(value)} />
+          <SortControl value={sort} onChange={(value) => setSort(value)} />
           {hasActiveFilters && (
             <Tooltip title="Clear filters">
               <IconButton onClick={clearFilters} color="primary">

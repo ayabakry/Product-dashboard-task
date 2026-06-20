@@ -9,8 +9,7 @@ function Hero() {
         borderRadius: 2,
         overflow: 'hidden',
         mb: 4,
-        backgroundImage:
-          'url(https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600)',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -19,7 +18,8 @@ function Hero() {
         sx={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)',
+          background:
+            'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)',
         }}
       />
       <Container
